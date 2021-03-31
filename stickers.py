@@ -29,8 +29,6 @@ class StickerSet:
 
 @dataclass
 class Sticker:
-    message_id: int
-    datetime: datetime
     emoji: str
     sticker_id: int
     set: StickerSet
@@ -41,6 +39,13 @@ class Sticker:
 
     def __hash__(self):
         return hash((self.__class__, self.sticker_id))
+
+
+@dataclass
+class StickerMessage:
+    message_id: int
+    datetime: datetime
+    sticker: Sticker
 
 
 async def get_sticker_set(c: TelegramClient, set_id: int, set_hash: int) -> StickerSet:

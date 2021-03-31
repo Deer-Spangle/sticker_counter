@@ -6,24 +6,26 @@ import telethon
 from telethon import TelegramClient
 from telethon.hints import Entity
 
-from stickers import Sticker, get_sticker_set
+from stickers import Sticker, get_sticker_set, StickerMessage
 from util import sync, api_id, api_hash, chat_id
 
 
-async def scrape_chat(c: TelegramClient, chat: Entity) -> List[Sticker]:
+async def scrape_chat(c: TelegramClient, chat: Entity) -> List[StickerMessage]:
     sticker_list = []
     async for m in c.iter_messages(chat):
         if not m.sticker:
             continue
         set_data = m.sticker.attributes[1].stickerset
         sticker_set = await get_sticker_set(c, set_data.id, set_data.access_hash)
-        sticker = Sticker(
+        sticker = StickerMessage(
             m.id,
             m.date,
-            m.sticker.attributes[1].alt,
-            m.sticker.id,
-            sticker_set,
-            m.document
+            Sticker(
+                m.sticker.attributes[1].alt,
+                m.sticker.id,
+                sticker_set,
+                m.document
+            )
         )
         sticker_list.append(sticker)
         print(sticker)
@@ -40,14 +42,14 @@ async def send_sticker(c: TelegramClient, chat: Entity, sticker: Sticker) -> Non
     await c.send_file(chat, sticker_doc)
 
 
-def generate_stats_messages(sticker_list: List[Sticker]) -> List[str]:
+def generate_stats_messages(sticker_list: List[StickerMessage]) -> List[str]:
     emoji_list = []
     sticker_id_list = []
     set_list = []
     for sticker in sticker_list:
-        emoji_list.extend(sticker.emoji.split())
-        sticker_id_list.append(sticker.sticker_id)
-        set_list.append(sticker.set)
+        emoji_list.extend(sticker.sticker.emoji.split())
+        sticker_id_list.append(sticker.sticker.sticker_id)
+        set_list.append(sticker.sticker.set)
     emoji = Counter(emoji_list)
     sticker_ids = Counter(sticker_id_list)
     sticker_set_ids = Counter(set_list)
@@ -59,12 +61,12 @@ def generate_stats_messages(sticker_list: List[Sticker]) -> List[str]:
     ]
 
 
-async def send_top_stickers(c: TelegramClient, chat: Entity, sticker_list: List[Sticker], count: int) -> None:
+async def send_top_stickers(c: TelegramClient, chat: Entity, sticker_list: List[StickerMessage], count: int) -> None:
     counter = Counter(sticker_list)
     position = 1
     for sticker, n in counter.most_common(count):
         await c.send_message(chat, f"Sticker #{position}, used on {n} days:")
-        await c.send_file(chat, sticker.document)
+        await c.send_file(chat, sticker.sticker.document)
         position += 1
 
 
