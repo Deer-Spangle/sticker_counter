@@ -48,6 +48,18 @@ class StickerMessage:
     sticker: Sticker
 
 
+@dataclass
+class RecentSticker:
+    datetime: datetime
+    sticker: Sticker
+
+    def __eq__(self, other):
+        return isinstance(other, RecentSticker) and self.datetime == other.datetime and self.sticker == other.sticker
+
+    def __hash__(self):
+        return hash((self.__class__, self.datetime, self.sticker))
+
+
 async def get_sticker_set(c: TelegramClient, set_id: int, set_hash: int) -> StickerSet:
     if set_id in set_cache:
         return set_cache[set_id]
