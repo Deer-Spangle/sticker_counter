@@ -1,54 +1,13 @@
-import json
-from asyncio import Future
 from collections import Counter
-from dataclasses import dataclass, field
 
-import datetime as datetime
-from typing import List, Union, Coroutine, Any
+from typing import List
 
 import telethon
 from telethon import TelegramClient
 from telethon.hints import Entity
-from telethon.tl.functions.messages import GetStickerSetRequest
-from telethon.tl.types import InputStickerSetID
 
+from stickers import Sticker, get_sticker_set
 from util import sync, api_id, api_hash, chat_id
-
-set_cache = {}
-
-
-@dataclass
-class StickerSet:
-    set_id: int
-    access_hash: int
-    title: str
-    handle: str
-    set_result: Any = field(compare=False)
-
-    def __eq__(self, other):
-        return isinstance(other, StickerSet) and self.set_id == other.set_id
-
-    def __hash__(self):
-        return hash((self.__class__, self.set_id))
-
-    def __str__(self):
-        return self.title
-
-
-@dataclass
-class Sticker:
-    message_id: int
-    datetime: datetime
-    emoji: str
-    sticker_id: int
-    set: StickerSet
-    document: Any
-
-    def __eq__(self, other):
-        return isinstance(other, Sticker) and self.sticker_id == other.sticker_id
-
-    def __hash__(self):
-        return hash((self.__class__, self.sticker_id))
 
 
 async def scrape_chat(c: TelegramClient, chat: Entity) -> List[Sticker]:
@@ -69,20 +28,6 @@ async def scrape_chat(c: TelegramClient, chat: Entity) -> List[Sticker]:
         sticker_list.append(sticker)
         print(sticker)
     return sticker_list
-
-
-async def get_sticker_set(c: TelegramClient, set_id: int, set_hash: int) -> StickerSet:
-    if set_id in set_cache:
-        return set_cache[set_id]
-    result = await c(GetStickerSetRequest(InputStickerSetID(set_id, set_hash)))
-    set_cache[set_id] = StickerSet(
-        result.set.id,
-        result.set.access_hash,
-        result.set.title,
-        result.set.short_name,
-        result
-    )
-    return set_cache[set_id]
 
 
 async def send_sticker(c: TelegramClient, chat: Entity, sticker: Sticker) -> None:
