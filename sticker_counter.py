@@ -12,12 +12,7 @@ from telethon.hints import Entity
 from telethon.tl.functions.messages import GetStickerSetRequest
 from telethon.tl.types import InputStickerSetID
 
-with open("config.json", "r") as f:
-    conf = json.load(f)
-    api_id = conf["api_id"]
-    api_hash = conf["api_hash"]
-    chat_id = conf["chat_id"]
-
+from util import sync, api_id, api_hash, chat_id
 
 set_cache = {}
 
@@ -126,10 +121,6 @@ async def send_top_stickers(c: TelegramClient, chat: Entity, sticker_list: List[
         await c.send_message(chat, f"Sticker #{position}, used on {n} days:")
         await c.send_file(chat, sticker.document)
         position += 1
-
-
-def sync(c: TelegramClient, future: Union[Future, Coroutine]) -> Any:
-    return c.loop.run_until_complete(future)
 
 
 if __name__ == '__main__':
