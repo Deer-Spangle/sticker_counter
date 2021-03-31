@@ -42,6 +42,7 @@ async def check_new_sticker_usage(
     new_recent = await list_recent_stickers(c)
     for new in new_recent:
         if new not in old_recent:
+            print(f"Posting new sticker: {new.sticker.emoji} {new.sticker.sticker_id}")
             await c.send_file(log_chat, new.sticker.document)
         else:
             break
@@ -53,6 +54,8 @@ if __name__ == '__main__':
     client.start()
     recent_stickers = sync(client, list_recent_stickers(client))
     chat = sync(client, client.get_entity(chat_id))
+    print("Startup complete")
     while True:
         recent_stickers = sync(client, check_new_sticker_usage(client, recent_stickers, chat))
+        print("Waiting for more...")
         sleep(60)
