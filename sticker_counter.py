@@ -62,11 +62,11 @@ def generate_stats_messages(sticker_list: List[StickerMessage]) -> List[str]:
 
 
 async def send_top_stickers(c: TelegramClient, chat: Entity, sticker_list: List[StickerMessage], count: int) -> None:
-    counter = Counter(sticker_list)
+    counter = Counter([msg.sticker for msg in sticker_list])
     position = 1
     for sticker, n in counter.most_common(count):
         await c.send_message(chat, f"Sticker #{position}, used on {n} days:")
-        await c.send_file(chat, sticker.sticker.document)
+        await c.send_file(chat, sticker.document)
         position += 1
 
 
