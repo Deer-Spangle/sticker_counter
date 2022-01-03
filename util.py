@@ -9,6 +9,7 @@ with open("config.json", "r") as f:
     api_id = conf["api_id"]
     api_hash = conf["api_hash"]
     chat_id = conf["chat_id"]
+    prom_port = conf.get("prometheus_port", 8367)
 
 
 def sync(c: TelegramClient, future: Union[Future, Coroutine]) -> Any:
