@@ -10,15 +10,15 @@ from telethon.tl.functions.messages import GetRecentStickersRequest
 
 from sticker_counter import Sticker
 from stickers import get_sticker_set, RecentSticker
-from util import api_id, api_hash, sync, chat_id, prom_port
-
+from util import api_id, api_hash, sync, chat_id, prom_port, prom_emoji
 
 sticker_count = Counter(
     "stickercounter_logger_sticker_total",
     "Total count of stickers logged",
     labelnames=["emoji"]
 )
-sticker_count.labels(emoji="🤗")
+for emoji in prom_emoji:
+    sticker_count.labels(emoji=emoji)
 latest_sticker = Gauge("stickercounter_logger_latest_sticker_unixtime", "Last time a sticker was logged")
 start_time = Gauge("stickercounter_logger_startup_unixtime", "Last time the sticker logger was started")
 
