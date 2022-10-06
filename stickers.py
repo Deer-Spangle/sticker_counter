@@ -5,6 +5,7 @@ import datetime as datetime
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetStickerSetRequest
 from telethon.tl.types import InputStickerSetID
+from telethon.errors.rpcerrorlist import StickersetInvalidError
 
 set_cache = {}
 
@@ -13,9 +14,10 @@ set_cache = {}
 class StickerSet:
     set_id: int
     access_hash: int
-    title: str
-    handle: str
+    title: Optional[str]
+    handle: Optional[str]
     set_result: Any = field(compare=False)
+    deleted: bool = False
 
     def __eq__(self, other):
         return isinstance(other, StickerSet) and self.set_id == other.set_id
@@ -24,6 +26,8 @@ class StickerSet:
         return hash((self.__class__, self.set_id))
 
     def __str__(self):
+        if self.deleted:
+            return f"DELETED: {self.set_id}"
         return self.title
 
 
@@ -63,7 +67,18 @@ class RecentSticker:
 async def get_sticker_set(c: TelegramClient, set_id: int, set_hash: int) -> StickerSet:
     if set_id in set_cache:
         return set_cache[set_id]
-    result = await c(GetStickerSetRequest(InputStickerSetID(set_id, set_hash)))
+    try:
+        result = await c(GetStickerSetRequest(InputStickerSetID(set_id, set_hash)))
+    except StickersetInvalidError:
+        set_cache[set_id] = StickerSet(
+            set_id,
+            set_hash,
+            None,
+            None,
+            None,
+            True
+        )
+        return set_cache[set_id]
     set_cache[set_id] = StickerSet(
         result.set.id,
         result.set.access_hash,
