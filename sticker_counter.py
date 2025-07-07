@@ -92,6 +92,6 @@ if __name__ == '__main__':
     sync(client, send_top_stickers(client, "me", stickers, 5))
     if my_sticker_set_substring is not None:
         sync(client, client.send_message("me", "Top 5 of my stickers used"))
-        my_stickers_filter = lambda smsg: my_sticker_set_substring.lower() in smsg.sticker.set.title.lower()
+        my_stickers_filter = lambda smsg: smsg.sticker.set.title is not None and my_sticker_set_substring.lower() in smsg.sticker.set.title.lower()
         sync(client, send_top_stickers(client, "me", stickers, 5, my_stickers_filter))
 
