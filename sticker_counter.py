@@ -1,6 +1,6 @@
 from collections import Counter
 
-from typing import List
+from typing import List, Callable
 
 import telethon
 from telethon import TelegramClient
@@ -61,13 +61,22 @@ def generate_stats_messages(sticker_list: List[StickerMessage]) -> List[str]:
     ]
 
 
-async def send_top_stickers(c: TelegramClient, chat: Entity, sticker_list: List[StickerMessage], count: int) -> None:
-    counter = Counter([msg.sticker for msg in sticker_list])
+async def send_top_stickers(
+        c: TelegramClient,
+        chat: Entity,
+        sticker_list: List[StickerMessage],
+        count: int,
+        sticker_filter: Callable[[StickerMessage], bool] = None
+) -> None:
+    if sticker_filter is None:
+        sticker_filter = lambda x: True
+    counter = Counter([msg.sticker for msg in sticker_list if sticker_filter(msg)])
     position = 1
     for sticker, n in counter.most_common(count):
         await c.send_message(chat, f"Sticker #{position}, used on {n} days:")
         await c.send_file(chat, sticker.document)
         position += 1
+
 
 
 if __name__ == '__main__':
@@ -79,3 +88,4 @@ if __name__ == '__main__':
     for stats_msg in stats_msgs:
         sync(client, client.send_message(sticker_chat, stats_msg))
     sync(client, send_top_stickers(client, "me", stickers, 5))
+
