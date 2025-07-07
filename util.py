@@ -11,6 +11,7 @@ with open("config.json", "r") as f:
     chat_id = conf["chat_id"]
     prom_port = conf.get("prometheus_port", 8367)
     prom_emoji = conf.get("prometheus_init_emoji", ["🤗"])
+    my_sticker_set_substring = conf.get("my_sticker_set_substring", None)
 
 
 def sync(c: TelegramClient, future: Union[Future, Coroutine]) -> Any:
