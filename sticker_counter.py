@@ -7,7 +7,7 @@ from telethon import TelegramClient
 from telethon.hints import Entity
 
 from stickers import Sticker, get_sticker_set, StickerMessage
-from util import sync, api_id, api_hash, chat_id, my_sticker_set_substring
+from util import sync, api_id, api_hash, chat_id, my_sticker_set_substring, chunks
 
 
 async def scrape_chat(c: TelegramClient, chat: Entity) -> List[StickerMessage]:
@@ -86,7 +86,8 @@ if __name__ == '__main__':
     stickers = sync(client, scrape_chat(client, sticker_chat))
     stats_msgs = generate_stats_messages(stickers)
     for stats_msg in stats_msgs:
-        sync(client, client.send_message(sticker_chat, stats_msg))
+        for chunk in chunks(stats_msg, 4000):
+            sync(client, client.send_message(sticker_chat, chunk))
     sync(client, client.send_message("me", "Overall top 5 stickers used"))
     sync(client, send_top_stickers(client, "me", stickers, 5))
     if my_sticker_set_substring is not None:
