@@ -68,7 +68,7 @@ async def get_sticker_set(c: TelegramClient, set_id: int, set_hash: int) -> Stic
     if set_id in set_cache:
         return set_cache[set_id]
     try:
-        result = await c(GetStickerSetRequest(InputStickerSetID(set_id, set_hash)))
+        result = await c(GetStickerSetRequest(InputStickerSetID(set_id, set_hash), hash=0))
     except StickersetInvalidError:
         set_cache[set_id] = StickerSet(
             set_id,
